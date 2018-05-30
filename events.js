@@ -66,7 +66,15 @@ EventEmitter.prototype._maxListeners = undefined;
 // added to it. This is a useful default which helps finding memory leaks.
 var defaultMaxListeners = 10;
 
-Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
+// IE8 has Object.defineProperty but it doesn't work. You need a shim to use
+// `events` in IE8 but mostly they don't override Object.defineProperty when it
+// exists.
+var supportsGetterProperties = true;
+try { Object.defineProperty({}, 'a', { get: function () {} }) } catch (err) {
+    supportsGetterProperties = false;
+}
+
+if (supportsGetterProperties) Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
   enumerable: true,
   get: function() {
     return defaultMaxListeners;
@@ -78,6 +86,7 @@ Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
     defaultMaxListeners = arg;
   }
 });
+else EventEmitter.defaultMaxListeners = defaultMaxListeners;
 
 EventEmitter.init = function() {
 
